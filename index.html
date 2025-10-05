@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lil JuMper</title>
   <style>
-    /* Reset */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: Arial, sans-serif;
       color: #fff;
@@ -16,17 +14,17 @@
       position: relative;
     }
 
-/* Efecto noise */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: url('https://raw.githubusercontent.com/azmcode/noise-texture/main/noise.png');
-  opacity: 0.05;
-  z-index: 1;
-  pointer-events: none;
-}
-
+    /* CANVAS DEL NOISE */
+    #noise {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      opacity: 0.07;
+      pointer-events: none;
+    }
 
     header {
       display: flex;
@@ -35,11 +33,7 @@ body::before {
       position: relative;
       z-index: 10;
     }
-    header img {
-      width: 50px;
-      height: 50px;
-      margin-right: 15px;
-    }
+    header img { width: 50px; height: 50px; margin-right: 15px; }
     header h1 {
       font-size: 2rem;
       color: #bb86fc;
@@ -55,17 +49,12 @@ body::before {
       position: relative;
       z-index: 10;
     }
-
     h2 {
       font-size: 1.6rem;
       margin-bottom: 20px;
       color: #bb86fc;
     }
-
-    p {
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
+    p { line-height: 1.6; margin-bottom: 20px; }
 
     .tracks iframe {
       margin: 15px 0;
@@ -86,9 +75,7 @@ body::before {
       font-weight: bold;
       transition: 0.3s;
     }
-    .btn:hover {
-      background: #9b5de5;
-    }
+    .btn:hover { background: #9b5de5; }
 
     footer {
       text-align: center;
@@ -109,6 +96,7 @@ body::before {
 </head>
 <body>
   <canvas id="particles"></canvas>
+  <canvas id="noise"></canvas>
 
   <header>
     <img src="https://i.imgur.com/3NhwfGv.png" alt="Logo Lil JuMper" />
@@ -146,17 +134,14 @@ body::before {
     <a href="mailto:juanmaflorez1234@gmail.com" class="btn">Booking / Email</a>
   </section>
 
-  <footer>
-    Made by Lil JuMper // 2025
-  </footer>
+  <footer>Made by Lil JuMper // 2025</footer>
 
   <script>
+    // Partículas moradas
     const canvas = document.getElementById("particles");
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
-    let particles = [];
 
     class Particle {
       constructor() {
@@ -181,30 +166,50 @@ body::before {
       }
     }
 
-    function init() {
+    let particles = [];
+    function initParticles() {
       particles = [];
-      for (let i = 0; i < 80; i++) {
-        particles.push(new Particle());
-      }
+      for (let i = 0; i < 80; i++) particles.push(new Particle());
     }
 
-    function animate() {
+    function animateParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => {
-        p.update();
-        p.draw();
-      });
-      requestAnimationFrame(animate);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateParticles);
     }
 
     window.addEventListener("resize", () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      init();
+      initParticles();
     });
 
-    init();
-    animate();
+    initParticles();
+    animateParticles();
+
+    // Ruido generado en canvas
+    const noiseCanvas = document.getElementById("noise");
+    const nctx = noiseCanvas.getContext("2d");
+    noiseCanvas.width = window.innerWidth;
+    noiseCanvas.height = window.innerHeight;
+
+    function generateNoise() {
+      const imageData = nctx.createImageData(noiseCanvas.width, noiseCanvas.height);
+      const buffer = new Uint32Array(imageData.data.buffer);
+      const len = buffer.length;
+      for (let i = 0; i < len; i++) {
+        const shade = Math.random() * 255 | 0;
+        buffer[i] = (255 << 24) | (shade << 16) | (shade << 8) | shade;
+      }
+      nctx.putImageData(imageData, 0, 0);
+    }
+
+    function loopNoise() {
+      generateNoise();
+      requestAnimationFrame(loopNoise);
+    }
+
+    loopNoise();
   </script>
 </body>
 </html>
